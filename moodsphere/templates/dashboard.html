@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoodSphere - Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --info-color: #3b82f6;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .dashboard-container {
+            padding: 2rem;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card {
+            padding: 1.5rem;
+            background: white;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .streak-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            font-weight: bold;
+        }
+        
+        .quick-action-btn {
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 10px;
+            border: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .quick-action-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .emotion-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+        
+        .emotion-happy { background: #dcfce7; color: #166534; }
+        .emotion-sad { background: #dbeafe; color: #1e40af; }
+        .emotion-angry { background: #fee2e2; color: #991b1b; }
+        .emotion-anxious { background: #fef3c7; color: #92400e; }
+        .emotion-calm { background: #e0e7ff; color: #3730a3; }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-transparent">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'dashboard' %}">
+                <i class="fas fa-brain"></i> MoodSphere
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'dashboard' %}">
+                            <i class="fas fa-home"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'community:list' %}">
+                            <i class="fas fa-users"></i> Community
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'analytics:overview' %}">
+                            <i class="fas fa-chart-line"></i> Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle"></i> {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">Profile</a></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:password_change' %}">Change Password</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="container-fluid">
+            <!-- Welcome Section -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card stat-card">
+                        <h2>Welcome back, {{ user.first_name|default:user.username }}! 👋</h2>
+                        <p class="text-muted">Here's your emotional wellness overview</p>
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="streak-badge">
+                                <i class="fas fa-fire"></i> {{ journal_streak }} Day Streak
+                            </span>
+                            <span class="text-muted">Keep up the great work!</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Left Column: Quick Actions -->
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <div class="card stat-card">
+                        <h5 class="mb-4">Quick Actions</h5>
+                        
+                        <button class="quick-action-btn btn btn-primary" data-bs-toggle="modal" data-bs-target="#textAnalysisModal">
+                            <i class="fas fa-comment-alt"></i> Analyze Text
+                        </button>
+                        
+                        <button class="quick-action-btn btn btn-success" data-bs-toggle="modal" data-bs-target="#faceAnalysisModal">
+                            <i class="fas fa-camera"></i> Analyze Face
+                        </button>
+                        
+                        <button class="quick-action-btn btn btn-info" data-bs-toggle="modal" data-bs-target="#speechAnalysisModal">
+                            <i class="fas fa-microphone"></i> Analyze Speech
+                        </button>
+                        
+                        <button class="quick-action-btn btn btn-warning" data-bs-toggle="modal" data-bs-target="#journalModal">
+                            <i class="fas fa-book"></i> New Journal Entry
+                        </button>
+                        
+                        <a href="{% url 'analytics:goals' %}" class="quick-action-btn btn btn-secondary">
+                            <i class="fas fa-bullseye"></i> View Goals
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Middle Column: Recent Activity -->
+                <div class="col-lg-6 col-md-12 mb-4">
+                    <!-- Recent Analyses -->
+                    <div class="card stat-card mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5>Recent Emotion Analyses</h5>
+                            <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+                        </div>
+                        
+                        <div class="list-group">
+                            {% for analysis in recent_analyses %}
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <strong>{{ analysis.get_analysis_type_display }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ analysis.created_at|date:"M d, Y h:i A" }}</small>
+                                </div>
+                                <span class="emotion-badge emotion-{{ analysis.dominant_emotion }}">
+                                    {{ analysis.dominant_emotion|title }}
+                                </span>
+                            </div>
+                            {% empty %}
+                            <div class="text-center text-muted py-4">
+                                <i class="fas fa-inbox fa-3x mb-3"></i>
+                                <p>No analyses yet. Try one of the quick actions!</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Recent Journal Entries -->
+                    <div class="card stat-card">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5>Recent Journal Entries</h5>
+                            <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+                        </div>
+                        
+                        <div class="list-group">
+                            {% for entry in recent_entries %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <strong>{{ entry.title|default:"Untitled Entry" }}</strong>
+                                    <span class="emotion-badge emotion-{{ entry.mood }}">
+                                        {{ entry.get_mood_display }}
+                                    </span>
+                                </div>
+                                <p class="mb-1 mt-2">{{ entry.ai_summary|truncatewords:20 }}</p>
+                                <small class="text-muted">{{ entry.entry_date|date:"M d, Y" }}</small>
+                            </div>
+                            {% empty %}
+                            <div class="text-center text-muted py-4">
+                                <i class="fas fa-book-open fa-3x mb-3"></i>
+                                <p>Start journaling to track your emotional journey!</p>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Stats & Tips -->
+                <div class="col-lg-3 col-md-6">
+                    <!-- Stats -->
+                    <div class="card stat-card mb-4">
+                        <h5 class="mb-4">Your Stats</h5>
+                        
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Total Analyses</span>
+                                <strong id="totalAnalyses">0</strong>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-primary" style="width: 75%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Journal Entries</span>
+                                <strong>{{ recent_entries|length }}</strong>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: 60%"></div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Current Streak</span>
+                                <strong>{{ journal_streak }} days</strong>
+                            </div>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-warning" style="width: 90%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Daily Tip -->
+                    <div class="card stat-card">
+                        <h5 class="mb-3">Daily Wellness Tip</h5>
+                        <div class="alert alert-info">
+                            <i class="fas fa-lightbulb"></i>
+                            <p class="mb-0">Practice gratitude by writing down three things you're thankful for today.</p>
+                        </div>
+                        
+                        <h6 class="mt-4 mb-3">Recommended Actions</h6>
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success"></i> Morning meditation (10 min)
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check-circle text-success"></i> Evening journal reflection
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-circle text-muted"></i> Connect with a friend
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Text Analysis Modal -->
+    <div class="modal fade" id="textAnalysisModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Text Emotion Analysis</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="textAnalysisForm">
+                        <div class="mb-3">
+                            <label class="form-label">Enter your text:</label>
+                            <textarea class="form-control" id="textInput" rows="5" placeholder="How are you feeling today?"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Analyze</button>
+                    </form>
+                    <div id="textAnalysisResult" class="mt-4" style="display: none;">
+                        <div class="alert alert-success">
+                            <h6>Analysis Result:</h6>
+                            <p><strong>Detected Emotion:</strong> <span id="detectedEmotion"></span></p>
+                            <div id="emotionDistribution"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Face Analysis Modal -->
+    <div class="modal fade" id="faceAnalysisModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Face Emotion Analysis</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-3">
+                        <video id="video" width="100%" height="auto" autoplay style="display: none;"></video>
+                        <canvas id="canvas" style="display: none;"></canvas>
+                        <img id="capturedImage" style="max-width: 100%; display: none;">
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button id="startCamera" class="btn btn-primary">Start Camera</button>
+                        <button id="captureImage" class="btn btn-success" style="display: none;">Capture & Analyze</button>
+                    </div>
+                    <div id="faceAnalysisResult" class="mt-4" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Speech Analysis Modal -->
+    <div class="modal fade" id="speechAnalysisModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Speech Emotion Analysis</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <div id="recordingIndicator" style="display: none;">
+                            <div class="spinner-grow text-danger" role="status">
+                                <span class="visually-hidden">Recording...</span>
+                            </div>
+                            <p class="mt-2">Recording... Speak now</p>
+                        </div>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button id="startRecording" class="btn btn-danger">
+                            <i class="fas fa-microphone"></i> Start Recording
+                        </button>
+                        <button id="stopRecording" class="btn btn-secondary" style="display: none;">
+                            <i class="fas fa-stop"></i> Stop & Analyze
+                        </button>
+                    </div>
+                    <div id="speechAnalysisResult" class="mt-4" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Journal Entry Modal -->
+    <div class="modal fade" id="journalModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">New Journal Entry</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="journalForm">
+                        <div class="mb-3">
+                            <label class="form-label">Title (Optional)</label>
+                            <input type="text" class="form-control" id="journalTitle" placeholder="Give your entry a title">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">How are you feeling?</label>
+                            <select class="form-select" id="journalMood" required>
+                                <option value="">Select mood...</option>
+                                <option value="happy">Happy</option>
+                                <option value="sad">Sad</option>
+                                <option value="angry">Angry</option>
+                                <option value="anxious">Anxious</option>
+                                <option value="calm">Calm</option>
+                                <option value="excited">Excited</option>
+                                <option value="neutral">Neutral</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Write your thoughts...</label>
+                            <textarea class="form-control" id="journalContent" rows="8" required></textarea>
+                        </div>
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="journalPrivate" checked>
+                            <label class="form-check-label" for="journalPrivate">Keep this entry private</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Save Entry</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // API Configuration
+        const API_BASE = '/api';
+        const TOKEN = localStorage.getItem('auth_token');
+
+        // Fetch user statistics
+        async function fetchStats() {
+            try {
+                const response = await fetch(`${API_BASE}/analysis/statistics/`, {
+                    headers: {
+                        'Authorization': `Bearer ${TOKEN}`
+                    }
+                });
+                const data = await response.json();
+                document.getElementById('totalAnalyses').textContent = data.total_analyses;
+            } catch (error) {
+                console.error('Error fetching stats:', error);
+            }
+        }
+
+        // Text Analysis
+        document.getElementById('textAnalysisForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = document.getElementById('textInput').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/analysis/analyze_text/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${TOKEN}`
+                    },
+                    body: JSON.stringify({ text })
+                });
+                
+                const data = await response.json();
+                displayTextResult(data.result);
+            } catch (error) {
+                alert('Error analyzing text: ' + error.message);
+            }
+        });
+
+        function displayTextResult(result) {
+            document.getElementById('detectedEmotion').textContent = result.emotion;
+            
+            let distributionHTML = '<div class="mt-3">';
+            for (const [emotion, score] of Object.entries(result.emotion_distribution)) {
+                distributionHTML += `
+                    <div class="mb-2">
+                        <div class="d-flex justify-content-between">
+                            <span>${emotion}</span>
+                            <span>${score}%</span>
+                        </div>
+                        <div class="progress">
+                            <div class="progress-bar" style="width: ${score}%"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            distributionHTML += '</div>';
+            
+            document.getElementById('emotionDistribution').innerHTML = distributionHTML;
+            document.getElementById('textAnalysisResult').style.display = 'block';
+        }
+
+        // Face Analysis
+        let stream = null;
+        
+        document.getElementById('startCamera').addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const video = document.getElementById('video');
+                video.srcObject = stream;
+                video.style.display = 'block';
+                document.getElementById('startCamera').style.display = 'none';
+                document.getElementById('captureImage').style.display = 'block';
+            } catch (error) {
+                alert('Camera access denied');
+            }
+        });
+
+        document.getElementById('captureImage').addEventListener('click', async () => {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const context = canvas.getContext('2d');
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0);
+            
+            const imageData = canvas.toDataURL('image/jpeg');
+            
+            // Stop camera
+            stream.getTracks().forEach(track => track.stop());
+            video.style.display = 'none';
+            
+            // Display captured image
+            document.getElementById('capturedImage').src = imageData;
+            document.getElementById('capturedImage').style.display = 'block';
+            
+            // Analyze
+            try {
+                const response = await fetch(`${API_BASE}/analysis/analyze_face/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${TOKEN}`
+                    },
+                    body: JSON.stringify({ image: imageData })
+                });
+                
+                const data = await response.json();
+                displayFaceResult(data.result);
+            } catch (error) {
+                alert('Error analyzing face: ' + error.message);
+            }
+        });
+
+        function displayFaceResult(result) {
+            const resultHTML = `
+                <div class="alert alert-success">
+                    <h6>Detected Emotion: ${result.emotion}</h6>
+                    <p class="mb-2"><strong>Recommendation:</strong> ${result.recommendation}</p>
+                    <p class="mb-2"><strong>Challenge:</strong> ${result.challenge}</p>
+                    <p class="mb-0"><strong>Tip:</strong> ${result.tip}</p>
+                </div>
+            `;
+            document.getElementById('faceAnalysisResult').innerHTML = resultHTML;
+            document.getElementById('faceAnalysisResult').style.display = 'block';
+        }
+
+        // Speech Analysis
+        let mediaRecorder;
+        let audioChunks = [];
+
+        document.getElementById('startRecording').addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                
+                mediaRecorder.ondataavailable = (event) => {
+                    audioChunks.push(event.data);
+                };
+                
+                mediaRecorder.start();
+                document.getElementById('startRecording').style.display = 'none';
+                document.getElementById('stopRecording').style.display = 'block';
+                document.getElementById('recordingIndicator').style.display = 'block';
+            } catch (error) {
+                alert('Microphone access denied');
+            }
+        });
+
+        document.getElementById('stopRecording').addEventListener('click', () => {
+            mediaRecorder.stop();
+            document.getElementById('stopRecording').style.display = 'none';
+            document.getElementById('recordingIndicator').style.display = 'none';
+            
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                const reader = new FileReader();
+                
+                reader.onloadend = async () => {
+                    const base64Audio = reader.result;
+                    
+                    try {
+                        const response = await fetch(`${API_BASE}/analysis/analyze_speech/`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${TOKEN}`
+                            },
+                            body: JSON.stringify({ audio: base64Audio, transcript: '' })
+                        });
+                        
+                        const data = await response.json();
+                        displaySpeechResult(data.result);
+                    } catch (error) {
+                        alert('Error analyzing speech: ' + error.message);
+                    }
+                };
+                
+                reader.readAsDataURL(audioBlob);
+                audioChunks = [];
+            };
+        });
+
+        function displaySpeechResult(result) {
+            const resultHTML = `
+                <div class="alert alert-success">
+                    <h6>Detected Emotion: ${result.emotion}</h6>
+                    <p class="mb-2"><strong>Recommendation:</strong> ${result.recommendation}</p>
+                    <p class="mb-2"><strong>Daily Challenge:</strong> ${result.daily_challenge}</p>
+                    <p class="mb-0"><strong>Tip:</strong> ${result.daily_tip}</p>
+                </div>
+            `;
+            document.getElementById('speechAnalysisResult').innerHTML = resultHTML;
+            document.getElementById('speechAnalysisResult').style.display = 'block';
+        }
+
+        // Journal Entry
+        document.getElementById('journalForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const entry = {
+                title: document.getElementById('journalTitle').value,
+                content: document.getElementById('journalContent').value,
+                mood: document.getElementById('journalMood').value,
+                is_private: document.getElementById('journalPrivate').checked,
+                entry_date: new Date().toISOString().split('T')[0]
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/journal/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${TOKEN}`
+                    },
+                    body: JSON.stringify(entry)
+                });
+                
+                if (response.ok) {
+                    alert('Journal entry saved successfully!');
+                    bootstrap.Modal.getInstance(document.getElementById('journalModal')).hide();
+                    document.getElementById('journalForm').reset();
+                    location.reload();
+                }
+            } catch (error) {
+                alert('Error saving journal entry: ' + error.message);
+            }
+        });
+
+        // Load stats on page load
+        fetchStats();
+    </script>
+</body>
+</html>
