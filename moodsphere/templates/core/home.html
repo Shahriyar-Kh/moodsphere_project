@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}MoodSphere - Home{% endblock %}
+
+{% block content %}
+<div class="min-vh-100 d-flex align-items-center" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 text-white">
+                <h1 class="display-3 fw-bold mb-4">Welcome to MoodSphere</h1>
+                <p class="lead mb-4">Your AI-powered emotional wellness companion. Track your moods, analyze your emotions, and improve your mental health journey.</p>
+                <div class="d-flex gap-3">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'dashboard' %}" class="btn btn-light btn-lg">Go to Dashboard</a>
+                    {% else %}
+                        <a href="{% url 'accounts:register' %}" class="btn btn-light btn-lg">Get Started</a>
+                        <a href="{% url 'accounts:login' %}" class="btn btn-outline-light btn-lg">Login</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card shadow-lg border-0">
+                    <div class="card-body p-5">
+                        <h3 class="mb-4">Features</h3>
+                        <ul class="list-unstyled">
+                            <li class="mb-3">
+                                <i class="fas fa-check-circle text-success"></i>
+                                <strong>Text Emotion Analysis</strong> - Analyze your written thoughts
+                            </li>
+                            <li class="mb-3">
+                                <i class="fas fa-check-circle text-success"></i>
+                                <strong>Face Emotion Detection</strong> - Understand your facial expressions
+                            </li>
+                            <li class="mb-3">
+                                <i class="fas fa-check-circle text-success"></i>
+                                <strong>Speech Analysis</strong> - Analyze emotions in your voice
+                            </li>
+                            <li class="mb-3">
+                                <i class="fas fa-check-circle text-success"></i>
+                                <strong>Smart Journaling</strong> - AI-powered journal insights
+                            </li>
+                            <li class="mb-3">
+                                <i class="fas fa-check-circle text-success"></i>
+                                <strong>Professional Support</strong> - Connect with therapists
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

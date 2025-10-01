@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.views import View
 from django.views.generic import TemplateView
 from django.utils.decorators import method_decorator
+from django.utils import timezone
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -14,6 +15,67 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import User, TherapistProfile
 from .serializers import UserSerializer, RegisterSerializer
 from .forms import UserRegistrationForm, UserLoginForm, ProfileUpdateForm
+
+
+class DashboardView(TemplateView):
+    """Main dashboard view"""
+    
+    template_name = 'dashboard.html'
+    
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super().dispatch(*args, **kwargs)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        # Import models here to avoid circular imports
+        from analysis.models import EmotionAnalysis
+        from journal.models import JournalEntry
+        from therapy.models import TherapySession
+        
+        # Get recent analyses
+        context['recent_analyses'] = EmotionAnalysis.objects.filter(
+            user=user
+        ).order_by('-created_at')[:5]
+        
+        # Get recent journal entries
+        context['recent_entries'] = JournalEntry.objects.filter(
+            user=user
+        ).order_by('-entry_date')[:5]
+        
+        # Calculate journal streak
+        entries = JournalEntry.objects.filter(user=user).order_by('-entry_date')
+        streak = 0
+        if entries.exists():
+            from datetime import timedelta
+            today = timezone.now().date()
+            current_date = today
+            entry_dates = set(entries.values_list('entry_date', flat=True))
+            
+            # Check if there's an entry today or yesterday
+            if today in entry_dates or (today - timedelta(days=1)) in entry_dates:
+                while current_date in entry_dates:
+                    streak += 1
+                    current_date -= timedelta(days=1)
+        
+        context['journal_streak'] = streak
+        
+        # Therapist-specific context
+        if user.is_therapist:
+            context['upcoming_sessions'] = TherapySession.objects.filter(
+                therapist=user,
+                status='scheduled'
+            ).order_by('scheduled_date', 'scheduled_time')[:5]
+        else:
+            context['upcoming_sessions'] = TherapySession.objects.filter(
+                client=user,
+                status='scheduled'
+            ).order_by('scheduled_date', 'scheduled_time')[:5]
+        
+        return context
+
 
 class RegisterView(View):
     """User registration view"""
@@ -105,6 +167,11 @@ class ProfileView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
+        
+        # Import models to avoid circular imports
+        from therapy.models import TherapySession
+        from analysis.models import EmotionAnalysis
+        from journal.models import JournalEntry
         
         context['user'] = user
         context['is_therapist'] = user.is_therapist
@@ -271,4 +338,3 @@ class ProfileAPIView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-

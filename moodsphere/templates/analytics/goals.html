@@ -1,0 +1,14 @@
+<!-- templates/analytics/goals.html -->
+{% extends 'base.html' %}
+{% block title %}Goals - MoodSphere{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <h2>Your Goals</h2>
+    <a href="{% url 'analytics:goal_create' %}" class="btn btn-primary mb-3">Create New Goal</a>
+    <div class="alert alert-info">
+        Set and track your wellness goals here.
+    </div>
+    <a href="{% url 'analytics:overview' %}" class="btn btn-secondary mt-3">Back to Analytics</a>
+</div>
+{% endblock %}

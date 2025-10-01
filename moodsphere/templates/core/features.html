@@ -1,0 +1,36 @@
+<!-- templates/core/features.html -->
+{% extends 'base.html' %}
+{% block title %}Features - MoodSphere{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <h1>Features</h1>
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5>Text Analysis</h5>
+                    <p>Analyze emotions in your written text</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5>Face Detection</h5>
+                    <p>Detect emotions from facial expressions</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5>Speech Analysis</h5>
+                    <p>Analyze emotions in your voice</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a href="{% url 'core:home' %}" class="btn btn-primary mt-3">Back to Home</a>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+<!-- templates/core/about.html -->
+{% extends 'base.html' %}
+{% block title %}About - MoodSphere{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <h1>About MoodSphere</h1>
+    <p class="lead mt-4">MoodSphere is an AI-powered emotional wellness platform designed to help you understand and improve your mental health.</p>
+    <a href="{% url 'core:home' %}" class="btn btn-primary mt-3">Back to Home</a>
+</div>
+{% endblock %}

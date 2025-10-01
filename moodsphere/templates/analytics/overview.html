@@ -1,0 +1,36 @@
+<!-- templates/analytics/overview.html -->
+{% extends 'base.html' %}
+{% block title %}Analytics - MoodSphere{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <h2>Analytics Overview</h2>
+    <div class="row mt-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3>{{ total_analyses }}</h3>
+                    <p>Total Analyses</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3>{{ total_entries }}</h3>
+                    <p>Journal Entries</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h3>Active</h3>
+                    <p>Status</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a href="{% url 'dashboard' %}" class="btn btn-secondary mt-4">Back to Dashboard</a>
+</div>
+{% endblock %}

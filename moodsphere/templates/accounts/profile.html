@@ -1,0 +1,48 @@
+<!-- templates/accounts/profile.html -->
+{% extends 'base.html' %}
+{% block title %}Profile - MoodSphere{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card shadow">
+                <div class="card-body p-5">
+                    <h2 class="mb-4">User Profile</h2>
+                    <div class="mb-3">
+                        <strong>Username:</strong> {{ user.username }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Email:</strong> {{ user.email }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Name:</strong> {{ user.get_full_name }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Role:</strong> {{ user.get_role_display }}
+                    </div>
+                    {% if is_therapist %}
+                    <div class="mb-3">
+                        <strong>Specialization:</strong> {{ therapist_profile.specialization }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Total Sessions:</strong> {{ total_sessions }}
+                    </div>
+                    {% else %}
+                    <div class="mb-3">
+                        <strong>Total Analyses:</strong> {{ total_analyses }}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Total Entries:</strong> {{ total_entries }}
+                    </div>
+                    {% endif %}
+                    <div class="mt-4">
+                        <a href="{% url 'accounts:password_change' %}" class="btn btn-warning">Change Password</a>
+                        <a href="{% url 'dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,18 @@
+<!-- templates/analytics/export.html -->
+{% extends 'base.html' %}
+{% block title %}Export Data - MoodSphere{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <h2>Export Your Data</h2>
+    <div class="card mt-4">
+        <div class="card-body">
+            <p>Download your emotional wellness data in various formats.</p>
+            <button class="btn btn-success">Export as CSV</button>
+            <button class="btn btn-info">Export as JSON</button>
+            <button class="btn btn-warning">Export as PDF</button>
+        </div>
+    </div>
+    <a href="{% url 'analytics:overview' %}" class="btn btn-secondary mt-3">Back to Analytics</a>
+</div>
+{% endblock %}
